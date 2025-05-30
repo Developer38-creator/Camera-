@@ -1,0 +1,858 @@
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   Camera &amp; Photo Editor App
+  </title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Roboto+Slab&amp;display=swap" rel="stylesheet"/>
+  <style>
+   body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-heading {
+      font-family: 'Roboto Slab', serif;
+    }
+    /* Hide default input range appearance for better styling */
+    input[type='range'] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #d1d5db;
+      outline: none;
+    }
+    input[type='range']::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      border: 2px solid white;
+      margin-top: -6px;
+      box-shadow: 0 0 2px rgba(0,0,0,0.3);
+    }
+    input[type='range']::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563eb;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 0 0 2px rgba(0,0,0,0.3);
+    }
+  </style>
+ </head>
+ <body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+  <!-- App Header -->
+  <header class="flex items-center justify-between px-4 py-3 bg-gray-800 shadow-md">
+   <h1 class="text-xl font-heading font-semibold">
+    Camera &amp; Photo Editor
+   </h1>
+   <button aria-label="Open Gallery" class="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" id="btnGallery">
+    <i class="fas fa-images fa-lg">
+    </i>
+   </button>
+  </header>
+  <!-- Main App Container -->
+  <main class="flex-grow flex flex-col relative bg-black">
+   <!-- Camera View -->
+   <section class="flex flex-col flex-grow relative bg-black" id="cameraView">
+    <video aria-label="Camera viewfinder" autoplay="" class="w-full h-full object-cover bg-black" id="video" muted="" playsinline="">
+    </video>
+    <!-- Tap to focus circle -->
+    <div class="pointer-events-none absolute border-2 border-blue-500 rounded-full w-20 h-20 opacity-0 transition-opacity" id="focusCircle">
+    </div>
+    <!-- Controls Overlay -->
+    <div class="absolute bottom-0 w-full bg-gradient-to-t from-black/90 to-transparent px-6 py-4 flex flex-col items-center space-y-4">
+     <div class="flex items-center justify-center space-x-6">
+      <!-- Flash Control -->
+      <button aria-label="Toggle flash mode" class="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" id="flashBtn">
+       <i class="fas fa-bolt fa-lg">
+       </i>
+       <span class="sr-only" id="flashMode">
+        Flash mode
+       </span>
+      </button>
+      <!-- Capture Button -->
+      <button aria-label="Capture photo" class="bg-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg active:scale-90 transition-transform focus:outline-none focus:ring-4 focus:ring-blue-400" id="captureBtn">
+       <div class="bg-red-600 rounded-full w-12 h-12">
+       </div>
+      </button>
+      <!-- Switch Camera -->
+      <button aria-label="Switch camera" class="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" id="switchCameraBtn">
+       <i class="fas fa-sync-alt fa-lg">
+       </i>
+      </button>
+     </div>
+     <p class="text-gray-400 text-sm select-none">
+      Pinch to zoom, tap to focus
+     </p>
+    </div>
+   </section>
+   <!-- Photo Preview & Editing Section -->
+   <section class="hidden flex flex-col flex-grow bg-gray-900 overflow-y-auto" id="photoEditor">
+    <div class="flex flex-col md:flex-row flex-grow">
+     <!-- Preview Image -->
+     <div class="flex-shrink-0 md:w-1/2 bg-black flex items-center justify-center p-4">
+      <img alt="Captured photo preview showing a placeholder image of a scenic mountain landscape with a clear blue sky" class="max-w-full max-h-[80vh] rounded-lg shadow-lg" height="800" id="previewImage" src="https://storage.googleapis.com/a1aa/image/6e32822c-b507-480e-6b91-5e4abb76fde6.jpg" width="600"/>
+     </div>
+     <!-- Editing Tools -->
+     <div class="flex-grow p-4 overflow-y-auto">
+      <h2 class="text-2xl font-heading font-semibold mb-4">
+       Edit Photo
+      </h2>
+      <!-- Basic Adjustments -->
+      <div class="mb-6">
+       <h3 class="text-lg font-semibold mb-2">
+        Basic Adjustments
+       </h3>
+       <div class="space-y-4">
+        <div>
+         <label class="block mb-1" for="brightness">
+          Brightness
+         </label>
+         <input id="brightness" max="100" min="-100" type="range" value="0"/>
+        </div>
+        <div>
+         <label class="block mb-1" for="contrast">
+          Contrast
+         </label>
+         <input id="contrast" max="100" min="-100" type="range" value="0"/>
+        </div>
+        <div>
+         <label class="block mb-1" for="saturation">
+          Saturation
+         </label>
+         <input id="saturation" max="100" min="-100" type="range" value="0"/>
+        </div>
+        <div>
+         <label class="block mb-1" for="exposure">
+          Exposure
+         </label>
+         <input id="exposure" max="100" min="-100" type="range" value="0"/>
+        </div>
+        <div>
+         <label class="block mb-1" for="highlights">
+          Highlights
+         </label>
+         <input id="highlights" max="100" min="-100" type="range" value="0"/>
+        </div>
+        <div>
+         <label class="block mb-1" for="shadows">
+          Shadows
+         </label>
+         <input id="shadows" max="100" min="-100" type="range" value="0"/>
+        </div>
+       </div>
+      </div>
+      <!-- Filters -->
+      <div class="mb-6">
+       <h3 class="text-lg font-semibold mb-2">
+        Filters
+       </h3>
+       <div class="flex space-x-3 overflow-x-auto pb-2">
+        <button aria-label="No filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="none">
+         <img alt="Filter preview showing original image with no filter applied" class="w-full h-full object-cover" height="80" src="https://storage.googleapis.com/a1aa/image/c4436a83-8a33-486b-88fe-4e2d14e08c7e.jpg" width="80"/>
+        </button>
+        <button aria-label="Grayscale filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="grayscale(100%)">
+         <img alt="Filter preview showing image in grayscale" class="w-full h-full object-cover grayscale" height="80" src="https://storage.googleapis.com/a1aa/image/0a8337b7-322d-4d68-35ba-2f4ba4b5ae68.jpg" width="80"/>
+        </button>
+        <button aria-label="Sepia filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="sepia(60%)">
+         <img alt="Filter preview showing image with sepia tone" class="w-full h-full object-cover sepia" height="80" src="https://storage.googleapis.com/a1aa/image/5db9b912-dd3a-4a75-3ce6-3f3ee65bdcbb.jpg" width="80"/>
+        </button>
+        <button aria-label="High contrast filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="contrast(150%)">
+         <img alt="Filter preview showing image with high contrast" class="w-full h-full object-cover contrast-150" height="80" src="https://storage.googleapis.com/a1aa/image/eba3228c-d227-4f8a-e559-4aeeb9ea85a0.jpg" width="80"/>
+        </button>
+        <button aria-label="Bright filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="brightness(120%)">
+         <img alt="Filter preview showing image with increased brightness" class="w-full h-full object-cover brightness-110" height="80" src="https://storage.googleapis.com/a1aa/image/4e46f623-c5a5-4616-e4dd-396b5e71a6fe.jpg" width="80"/>
+        </button>
+        <button aria-label="Blur filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="blur(2px)">
+         <img alt="Filter preview showing image with blur effect" class="w-full h-full object-cover blur-sm" height="80" src="https://storage.googleapis.com/a1aa/image/0abff3ff-7f81-4b97-b9c5-33b1bb2c7873.jpg" width="80"/>
+        </button>
+        <button aria-label="Invert colors filter" class="filter-btn flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500" data-filter="invert(100%)">
+         <img alt="Filter preview showing image with inverted colors" class="w-full h-full object-cover invert" height="80" src="https://storage.googleapis.com/a1aa/image/22215140-8bd8-4dbe-a3bf-557b813a8c7c.jpg" width="80"/>
+        </button>
+       </div>
+      </div>
+      <!-- Crop & Rotate -->
+      <div class="mb-6">
+       <h3 class="text-lg font-semibold mb-2">
+        Crop &amp; Rotate
+       </h3>
+       <div class="flex flex-wrap gap-3 items-center">
+        <button class="px-3 py-1 bg-blue-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-400" id="cropSquare">
+         Square (1:1)
+        </button>
+        <button class="px-3 py-1 bg-blue-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-400" id="crop4by3">
+         4:3
+        </button>
+        <button class="px-3 py-1 bg-blue-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-400" id="crop16by9">
+         16:9
+        </button>
+        <button aria-label="Rotate left" class="p-2 bg-gray-700 rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="rotateLeft">
+         <i class="fas fa-undo fa-lg">
+         </i>
+        </button>
+        <button aria-label="Rotate right" class="p-2 bg-gray-700 rounded hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="rotateRight">
+         <i class="fas fa-redo fa-lg">
+         </i>
+        </button>
+       </div>
+      </div>
+      <!-- Text Addition -->
+      <div class="mb-6">
+       <h3 class="text-lg font-semibold mb-2">
+        Add Text
+       </h3>
+       <div class="space-y-3">
+        <input aria-label="Text input for adding text to photo" class="w-full rounded px-3 py-2 text-gray-900" id="textInput" placeholder="Enter text here" type="text"/>
+        <div class="flex space-x-3 items-center">
+         <label class="block text-gray-300" for="fontSelect">
+          Font:
+         </label>
+         <select aria-label="Select font for text" class="rounded px-2 py-1 text-gray-900" id="fontSelect">
+          <option selected="" value="Inter">
+           Inter
+          </option>
+          <option value="Roboto Slab">
+           Roboto Slab
+          </option>
+          <option value="Arial">
+           Arial
+          </option>
+          <option value="Georgia">
+           Georgia
+          </option>
+          <option value="Courier New">
+           Courier New
+          </option>
+         </select>
+         <label class="block text-gray-300" for="colorPicker">
+          Color:
+         </label>
+         <input aria-label="Select text color" id="colorPicker" type="color" value="#ffffff"/>
+         <button aria-label="Add text to photo" class="bg-blue-600 px-3 py-1 rounded text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400" id="addTextBtn">
+          Add Text
+         </button>
+        </div>
+       </div>
+      </div>
+      <!-- Drawing / Annotations -->
+      <div class="mb-6">
+       <h3 class="text-lg font-semibold mb-2">
+        Draw / Annotate
+       </h3>
+       <div class="flex items-center space-x-3">
+        <button aria-label="Toggle drawing mode" aria-pressed="false" class="px-3 py-1 bg-gray-700 rounded text-white hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-400" id="drawModeBtn">
+         Draw
+        </button>
+        <label class="text-gray-300" for="brushSize">
+         Brush size:
+        </label>
+        <input aria-label="Brush size slider" class="w-24" id="brushSize" max="20" min="1" type="range" value="5"/>
+        <label class="text-gray-300" for="brushColor">
+         Color:
+        </label>
+        <input aria-label="Brush color picker" id="brushColor" type="color" value="#ff0000"/>
+        <button aria-label="Clear all drawings" class="px-3 py-1 bg-red-600 rounded text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400" id="clearDrawingBtn">
+         Clear
+        </button>
+       </div>
+       <canvas class="mt-3 rounded-lg border border-gray-700 w-full max-h-96 bg-transparent touch-none" id="drawingCanvas">
+       </canvas>
+      </div>
+      <!-- Enhancements -->
+      <div class="mb-6">
+       <h3 class="text-lg font-semibold mb-2">
+        Enhancements
+       </h3>
+       <div class="space-y-4 max-w-sm">
+        <div>
+         <label class="block mb-1" for="sharpen">
+          Sharpen
+         </label>
+         <input id="sharpen" max="5" min="0" step="0.1" type="range" value="0"/>
+        </div>
+        <div>
+         <label class="block mb-1" for="blur">
+          Blur
+         </label>
+         <input id="blur" max="10" min="0" step="0.1" type="range" value="0"/>
+        </div>
+       </div>
+      </div>
+      <!-- Save / Download -->
+      <div class="flex justify-center mt-6">
+       <button aria-label="Save edited photo to device" class="bg-green-600 px-6 py-3 rounded text-white text-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-400" id="saveBtn">
+        Save Photo
+       </button>
+      </div>
+     </div>
+    </div>
+   </section>
+  </main>
+  <!-- Gallery Modal (hidden by default) -->
+  <div class="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex flex-col z-50 hidden" id="galleryModal">
+   <header class="flex items-center justify-between p-4 border-b border-gray-700">
+    <h2 class="text-xl font-heading font-semibold text-white">
+     Gallery
+    </h2>
+    <button aria-label="Close gallery" class="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 rounded" id="closeGalleryBtn">
+     <i class="fas fa-times fa-lg">
+     </i>
+    </button>
+   </header>
+   <main class="flex-grow overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <!-- Gallery images will be appended here dynamically -->
+   </main>
+  </div>
+  <script>
+   // Elements
+    const video = document.getElementById('video');
+    const captureBtn = document.getElementById('captureBtn');
+    const cameraView = document.getElementById('cameraView');
+    const photoEditor = document.getElementById('photoEditor');
+    const previewImage = document.getElementById('previewImage');
+    const flashBtn = document.getElementById('flashBtn');
+    const flashModeLabel = document.getElementById('flashMode');
+    const switchCameraBtn = document.getElementById('switchCameraBtn');
+    const btnGallery = document.getElementById('btnGallery');
+    const galleryModal = document.getElementById('galleryModal');
+    const closeGalleryBtn = document.getElementById('closeGalleryBtn');
+    const galleryMain = galleryModal.querySelector('main');
+
+    // Editing controls
+    const brightnessInput = document.getElementById('brightness');
+    const contrastInput = document.getElementById('contrast');
+    const saturationInput = document.getElementById('saturation');
+    const exposureInput = document.getElementById('exposure');
+    const highlightsInput = document.getElementById('highlights');
+    const shadowsInput = document.getElementById('shadows');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const cropSquareBtn = document.getElementById('cropSquare');
+    const crop4by3Btn = document.getElementById('crop4by3');
+    const crop16by9Btn = document.getElementById('crop16by9');
+    const rotateLeftBtn = document.getElementById('rotateLeft');
+    const rotateRightBtn = document.getElementById('rotateRight');
+    const textInput = document.getElementById('textInput');
+    const fontSelect = document.getElementById('fontSelect');
+    const colorPicker = document.getElementById('colorPicker');
+    const addTextBtn = document.getElementById('addTextBtn');
+    const drawModeBtn = document.getElementById('drawModeBtn');
+    const brushSizeInput = document.getElementById('brushSize');
+    const brushColorInput = document.getElementById('brushColor');
+    const clearDrawingBtn = document.getElementById('clearDrawingBtn');
+    const drawingCanvas = document.getElementById('drawingCanvas');
+    const sharpenInput = document.getElementById('sharpen');
+    const blurInput = document.getElementById('blur');
+    const saveBtn = document.getElementById('saveBtn');
+    const focusCircle = document.getElementById('focusCircle');
+
+    // Variables
+    let stream = null;
+    let currentFacingMode = 'environment'; // or 'user'
+    let flashModes = ['auto', 'on', 'off'];
+    let currentFlashIndex = 0;
+    let zoomLevel = 1;
+    let maxZoom = 3;
+    let minZoom = 1;
+    let lastTouchDistance = null;
+    let rotationDegrees = 0;
+    let cropAspectRatio = null; // null means no crop
+    let filterValue = 'none';
+    let isDrawing = false;
+    let drawingContext = drawingCanvas.getContext('2d');
+    let brushSize = parseInt(brushSizeInput.value, 10);
+    let brushColor = brushColorInput.value;
+    let addedTexts = [];
+    let sharpenValue = 0;
+    let blurValue = 0;
+    let savedPhotos = [];
+
+    // Setup fonts for text addition
+    const fonts = {
+      'Inter': "'Inter', sans-serif",
+      'Roboto Slab': "'Roboto Slab', serif",
+      'Arial': "Arial, sans-serif",
+      'Georgia': "Georgia, serif",
+      'Courier New': "'Courier New', monospace"
+    };
+
+    // Initialize camera stream
+    async function startCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: currentFacingMode,
+            zoom: true,
+          },
+          audio: false,
+        });
+        video.srcObject = stream;
+
+        // Try to get max zoom from capabilities
+        const [track] = stream.getVideoTracks();
+        const capabilities = track.getCapabilities();
+        if (capabilities.zoom) {
+          maxZoom = capabilities.zoom.max;
+          minZoom = capabilities.zoom.min;
+          zoomLevel = minZoom;
+          track.applyConstraints({advanced: [{zoom: zoomLevel}]});
+        } else {
+          maxZoom = 3;
+          minZoom = 1;
+          zoomLevel = 1;
+        }
+      } catch (err) {
+        alert('Error accessing camera: ' + err.message);
+      }
+    }
+
+    // Flash control (Note: Flash control is limited in browsers)
+    function cycleFlashMode() {
+      currentFlashIndex = (currentFlashIndex + 1) % flashModes.length;
+      flashModeLabel.textContent = `Flash mode: ${flashModes[currentFlashIndex]}`;
+      // Flash control is not supported in most browsers, so this is just UI feedback
+      flashBtn.title = `Flash mode: ${flashModes[currentFlashIndex]}`;
+    }
+
+    // Capture photo from video stream
+    function capturePhoto() {
+      const videoTrack = stream.getVideoTracks()[0];
+      const imageCapture = new ImageCapture(videoTrack);
+      imageCapture.takePhoto()
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          loadImageToEditor(url);
+        })
+        .catch(() => {
+          // fallback to canvas capture
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const url = canvas.toDataURL('image/png');
+          loadImageToEditor(url);
+        });
+    }
+
+    // Load captured image into editor
+    function loadImageToEditor(src) {
+      previewImage.src = src;
+      resetEditingState();
+      cameraView.classList.add('hidden');
+      photoEditor.classList.remove('hidden');
+      resizeCanvas();
+      redrawCanvas();
+    }
+
+    // Reset editing controls and state
+    function resetEditingState() {
+      brightnessInput.value = 0;
+      contrastInput.value = 0;
+      saturationInput.value = 0;
+      exposureInput.value = 0;
+      highlightsInput.value = 0;
+      shadowsInput.value = 0;
+      sharpenInput.value = 0;
+      blurInput.value = 0;
+      filterValue = 'none';
+      rotationDegrees = 0;
+      cropAspectRatio = null;
+      addedTexts = [];
+      drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      drawingCanvas.style.display = 'block';
+      isDrawing = false;
+      drawModeBtn.setAttribute('aria-pressed', 'false');
+      drawModeBtn.classList.remove('bg-blue-600');
+      drawModeBtn.classList.add('bg-gray-700');
+      brushSize = parseInt(brushSizeInput.value, 10);
+      brushColor = brushColorInput.value;
+      applyAllFilters();
+    }
+
+    // Apply all filters and adjustments to preview image
+    function applyAllFilters() {
+      // Compose CSS filter string
+      const brightness = 100 + parseInt(brightnessInput.value, 10);
+      const contrast = 100 + parseInt(contrastInput.value, 10);
+      const saturation = 100 + parseInt(saturationInput.value, 10);
+      const exposure = 100 + parseInt(exposureInput.value, 10);
+      // highlights and shadows are not directly supported in CSS filters, so we skip or simulate lightly
+      // sharpen and blur handled separately
+      const blur = parseFloat(blurInput.value);
+      const sharpen = parseFloat(sharpenInput.value);
+
+      let filterStr = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%) brightness(${exposure}%) ${filterValue} blur(${blur}px)`;
+
+      previewImage.style.filter = filterStr;
+
+      // Rotation
+      previewImage.style.transform = `rotate(${rotationDegrees}deg)`;
+
+      // Crop handled by CSS object-fit and container clipping
+      if (cropAspectRatio) {
+        previewImage.style.objectFit = 'cover';
+        previewImage.parentElement.style.aspectRatio = cropAspectRatio;
+        previewImage.parentElement.style.overflow = 'hidden';
+      } else {
+        previewImage.style.objectFit = 'contain';
+        previewImage.parentElement.style.aspectRatio = 'auto';
+        previewImage.parentElement.style.overflow = 'visible';
+      }
+
+      // Redraw canvas for drawings and texts
+      redrawCanvas();
+    }
+
+    // Filter buttons click handler
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('border-blue-500'));
+        btn.classList.add('border-blue-500');
+        filterValue = btn.dataset.filter || 'none';
+        applyAllFilters();
+      });
+    });
+
+    // Crop buttons
+    cropSquareBtn.addEventListener('click', () => {
+      cropAspectRatio = '1 / 1';
+      applyAllFilters();
+    });
+    crop4by3Btn.addEventListener('click', () => {
+      cropAspectRatio = '4 / 3';
+      applyAllFilters();
+    });
+    crop16by9Btn.addEventListener('click', () => {
+      cropAspectRatio = '16 / 9';
+      applyAllFilters();
+    });
+
+    // Rotate buttons
+    rotateLeftBtn.addEventListener('click', () => {
+      rotationDegrees -= 90;
+      applyAllFilters();
+    });
+    rotateRightBtn.addEventListener('click', () => {
+      rotationDegrees += 90;
+      applyAllFilters();
+    });
+
+    // Add text to canvas
+    addTextBtn.addEventListener('click', () => {
+      const text = textInput.value.trim();
+      if (!text) return;
+      const font = fonts[fontSelect.value] || fonts['Inter'];
+      const color = colorPicker.value;
+      addedTexts.push({ text, font, color, x: 50, y: 50 });
+      textInput.value = '';
+      redrawCanvas();
+    });
+
+    // Drawing mode toggle
+    drawModeBtn.addEventListener('click', () => {
+      isDrawing = !isDrawing;
+      drawModeBtn.setAttribute('aria-pressed', isDrawing.toString());
+      if (isDrawing) {
+        drawModeBtn.classList.remove('bg-gray-700');
+        drawModeBtn.classList.add('bg-blue-600');
+        drawingCanvas.style.pointerEvents = 'auto';
+      } else {
+        drawModeBtn.classList.remove('bg-blue-600');
+        drawModeBtn.classList.add('bg-gray-700');
+        drawingCanvas.style.pointerEvents = 'none';
+      }
+    });
+
+    // Brush size and color change
+    brushSizeInput.addEventListener('input', () => {
+      brushSize = parseInt(brushSizeInput.value, 10);
+    });
+    brushColorInput.addEventListener('input', () => {
+      brushColor = brushColorInput.value;
+    });
+
+    // Clear drawing
+    clearDrawingBtn.addEventListener('click', () => {
+      drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      redrawCanvas();
+    });
+
+    // Sharpen and blur inputs
+    sharpenInput.addEventListener('input', () => {
+      sharpenValue = parseFloat(sharpenInput.value);
+      applyAllFilters();
+    });
+    blurInput.addEventListener('input', () => {
+      blurValue = parseFloat(blurInput.value);
+      applyAllFilters();
+    });
+
+    // Drawing canvas setup and drawing logic
+    function resizeCanvas() {
+      const rect = previewImage.getBoundingClientRect();
+      drawingCanvas.width = rect.width;
+      drawingCanvas.height = rect.height;
+      drawingCanvas.style.width = rect.width + 'px';
+      drawingCanvas.style.height = rect.height + 'px';
+      drawingCanvas.style.position = 'absolute';
+      drawingCanvas.style.top = previewImage.offsetTop + 'px';
+      drawingCanvas.style.left = previewImage.offsetLeft + 'px';
+      drawingCanvas.style.zIndex = 10;
+      drawingCanvas.style.background = 'transparent';
+      drawingCanvas.style.touchAction = 'none';
+      drawingContext.lineCap = 'round';
+      drawingContext.lineJoin = 'round';
+    }
+
+    // Redraw canvas: clear, draw texts and drawings
+    function redrawCanvas() {
+      drawingContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+
+      // Draw added texts
+      addedTexts.forEach(({ text, font, color, x, y }) => {
+        drawingContext.font = `24px ${font}`;
+        drawingContext.fillStyle = color;
+        drawingContext.fillText(text, x, y);
+      });
+    }
+
+    // Drawing event handlers
+    let drawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    function getPointerPos(evt) {
+      const rect = drawingCanvas.getBoundingClientRect();
+      let clientX, clientY;
+      if (evt.touches && evt.touches.length > 0) {
+        clientX = evt.touches[0].clientX;
+        clientY = evt.touches[0].clientY;
+      } else {
+        clientX = evt.clientX;
+        clientY = evt.clientY;
+      }
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top,
+      };
+    }
+
+    drawingCanvas.addEventListener('pointerdown', (e) => {
+      if (!isDrawing) return;
+      drawing = true;
+      const pos = getPointerPos(e);
+      lastX = pos.x;
+      lastY = pos.y;
+      drawingContext.strokeStyle = brushColor;
+      drawingContext.lineWidth = brushSize;
+      drawingContext.beginPath();
+      drawingContext.moveTo(lastX, lastY);
+      e.preventDefault();
+    });
+
+    drawingCanvas.addEventListener('pointermove', (e) => {
+      if (!drawing) return;
+      const pos = getPointerPos(e);
+      drawingContext.lineTo(pos.x, pos.y);
+      drawingContext.stroke();
+      lastX = pos.x;
+      lastY = pos.y;
+      e.preventDefault();
+    });
+
+    drawingCanvas.addEventListener('pointerup', () => {
+      if (!isDrawing) return;
+      drawing = false;
+    });
+    drawingCanvas.addEventListener('pointerleave', () => {
+      if (!isDrawing) return;
+      drawing = false;
+    });
+
+    // Save edited photo
+    saveBtn.addEventListener('click', () => {
+      // Create a canvas to combine image, drawings, and texts
+      const tempCanvas = document.createElement('canvas');
+      const imgWidth = previewImage.naturalWidth;
+      const imgHeight = previewImage.naturalHeight;
+      tempCanvas.width = imgWidth;
+      tempCanvas.height = imgHeight;
+      const ctx = tempCanvas.getContext('2d');
+
+      // Draw the base image
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = previewImage.src;
+      img.onload = () => {
+        // Apply rotation and crop transformations on canvas
+        ctx.save();
+
+        // Translate and rotate canvas for rotation
+        if (rotationDegrees % 360 !== 0) {
+          const angle = (rotationDegrees * Math.PI) / 180;
+          if (rotationDegrees % 180 !== 0) {
+            tempCanvas.width = imgHeight;
+            tempCanvas.height = imgWidth;
+          }
+          ctx.translate(tempCanvas.width / 2, tempCanvas.height / 2);
+          ctx.rotate(angle);
+          ctx.translate(-imgWidth / 2, -imgHeight / 2);
+        }
+
+        // Draw image
+        ctx.filter = previewImage.style.filter || 'none';
+        ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+        ctx.restore();
+
+        // Draw added texts scaled to image size
+        addedTexts.forEach(({ text, font, color, x, y }) => {
+          ctx.font = `48px ${font}`;
+          ctx.fillStyle = color;
+          // Scale positions from canvas size to image size
+          const scaleX = imgWidth / drawingCanvas.width;
+          const scaleY = imgHeight / drawingCanvas.height;
+          ctx.fillText(text, x * scaleX, y * scaleY);
+        });
+
+        // Draw drawings scaled to image size
+        const drawingImg = new Image();
+        drawingImg.src = drawingCanvas.toDataURL();
+        drawingImg.onload = () => {
+          ctx.drawImage(drawingImg, 0, 0, imgWidth, imgHeight);
+
+          // Save image as PNG
+          tempCanvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            // Trigger download
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `edited_photo_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+
+            // Save to gallery array
+            savedPhotos.push(url);
+          }, 'image/png');
+        };
+      };
+    });
+
+    // Switch camera
+    switchCameraBtn.addEventListener('click', () => {
+      currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+      startCamera();
+    });
+
+    // Flash button
+    flashBtn.addEventListener('click', cycleFlashMode);
+
+    // Capture button
+    captureBtn.addEventListener('click', capturePhoto);
+
+    // Gallery modal open/close
+    btnGallery.addEventListener('click', () => {
+      populateGallery();
+      galleryModal.classList.remove('hidden');
+      galleryModal.focus();
+    });
+    closeGalleryBtn.addEventListener('click', () => {
+      galleryModal.classList.add('hidden');
+    });
+
+    // Populate gallery with saved photos
+    function populateGallery() {
+      galleryMain.innerHTML = '';
+      if (savedPhotos.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.textContent = 'No photos saved yet.';
+        emptyMsg.className = 'text-gray-400 col-span-full text-center mt-10';
+        galleryMain.appendChild(emptyMsg);
+        return;
+      }
+      savedPhotos.forEach((photoUrl, i) => {
+        const img = document.createElement('img');
+        img.src = photoUrl;
+        img.alt = `Saved photo ${i + 1}`;
+        img.className = 'w-full h-40 object-cover rounded-lg shadow-md cursor-pointer hover:scale-105 transition-transform';
+        galleryMain.appendChild(img);
+      });
+    }
+
+    // Pinch to zoom on video element
+    video.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        lastTouchDistance = getTouchDistance(e.touches);
+      }
+    }, { passive: false });
+
+    video.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const currentDistance = getTouchDistance(e.touches);
+        if (lastTouchDistance) {
+          const diff = currentDistance - lastTouchDistance;
+          if (Math.abs(diff) > 5) {
+            zoomLevel += diff * 0.01;
+            zoomLevel = Math.min(maxZoom, Math.max(minZoom, zoomLevel));
+            const [track] = stream.getVideoTracks();
+            track.applyConstraints({ advanced: [{ zoom: zoomLevel }] }).catch(() => {});
+            lastTouchDistance = currentDistance;
+          }
+        }
+      }
+    }, { passive: false });
+
+    video.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        lastTouchDistance = null;
+      }
+    });
+
+    function getTouchDistance(touches) {
+      const [touch1, touch2] = touches;
+      const dx = touch1.clientX - touch2.clientX;
+      const dy = touch1.clientY - touch2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Tap to focus simulation (visual only)
+    video.addEventListener('click', (e) => {
+      const rect = video.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      focusCircle.style.left = `${x - 40}px`;
+      focusCircle.style.top = `${y - 40}px`;
+      focusCircle.style.opacity = '1';
+      setTimeout(() => {
+        focusCircle.style.opacity = '0';
+      }, 1000);
+      // Actual focus control is not supported in most browsers
+    });
+
+    // Resize canvas on window resize
+    window.addEventListener('resize', () => {
+      if (!photoEditor.classList.contains('hidden')) {
+        resizeCanvas();
+        redrawCanvas();
+      }
+    });
+
+    // Initialize app
+    startCamera();
+  </script>
+ </body>
+</html>
