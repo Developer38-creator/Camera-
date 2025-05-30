@@ -1,0 +1,10 @@
+/* এখানে আপনার CSS স্টাইল যোগ করুন */
+body {
+    font-family: sans-serif;
+    text-align: center;
+}
+
+video {
+    max-width: 80%;
+    height: auto;
+}
