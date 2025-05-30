@@ -10,7 +10,7 @@ async function startCamera() {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
     } catch (err) {
-        console.error("ক্যামেরা অ্যাক্সেস করতে সমস্যা:", err);
+        console.error("camera error by ritam :", err);
     }
 }
 
